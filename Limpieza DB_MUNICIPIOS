@@ -1,0 +1,209 @@
+
+--SE CREA BASE DE DATOS Y SE CREAN TABLAS --
+
+USE MUNICIPIOS;
+
+CREATE TABLE PAIS (
+Nombre VARCHAR (50) NOT NULL,
+ID_Pais INT);
+
+CREATE TABLE PROVINCIA (
+ID_Provincia INT,
+Nombre_Provincia VARCHAR (50) NOT NULL,
+ID_Pais INT,
+Limitrofe VARCHAR (50) NOT NULL);
+
+SELECT DISTINCT provincia_id
+FROM dbo.MUNICIPIOS
+WHERE provincia_id NOT IN (
+    SELECT ID_Provincia
+    FROM dbo.PROVINCIA
+);
+
+
+-- SE DEFINEN LLAVES // SIEMPRE NOT NULL--
+
+ALTER TABLE MUNICIPIOS
+ALTER COLUMN provincia_id INT;
+
+ALTER TABLE PAIS
+ALTER COLUMN ID_Pais INT NOT NULL;
+
+ALTER TABLE PROVINCIA
+ADD CONSTRAINT FK_Provincia_Pais
+FOREIGN KEY (ID_Pais) REFERENCES PAIS(ID_Pais);
+
+ALTER TABLE PROVINCIA
+ALTER COLUMN ID_Provincia INT NOT NULL;
+
+ALTER TABLE PROVINCIA
+ADD CONSTRAINT PK_Provincia
+PRIMARY KEY (ID_Provincia);
+
+-- SE RENOMBRA COLUMNA --
+EXEC sp_rename 
+    'dbo.MUNICIPIOS.id',
+    'ID_Municipio',
+    'COLUMN';
+
+EXEC sp_rename 
+    'dbo.MUNICIPIOS.provincia_id',
+    'ID_Provincia',
+    'COLUMN';
+
+
+ALTER TABLE MUNICIPIOS
+ADD PRIMARY KEY (ID_Municipio);
+
+
+-- INSERCION DE DATOS --
+
+INSERT INTO PAIS(Nombre,ID_Pais)
+VALUES ('Argentina',1), ('Uruguay',2), ('Inglaterra',3), ('Londres',4), ('Cardiff',5), ('Reino Unido',6);
+
+SELECT*FROM MUNICIPIOS;
+
+INSERT INTO PROVINCIA (ID_Provincia,Nombre_Provincia,ID_Pais,Limitrofe)
+VALUES (1,'Santa Fe',1,0),(2,'Misiones',1,1),(3,'Catamarca',1,1),(4,'La Rioja',1,1),
+(5,'Maldonado',2,0),(6, 'Rivera',2,1),(7,'Chubut',1,1),(8, 'Santa Cruz',1,1),
+(9,'Neuquen',1,1),(10,'Flores',2,0);
+
+SELECT*FROM PROVINCIA;
+
+
+-- SE ELIMINA DUPLICADOS EN TABLA PAIS --
+
+DELETE FROM PAIS
+WHERE Nombre = 'Reino Unido';
+
+DELETE FROM PAIS
+WHERE Nombre = 'Inglaterra';
+
+
+-- CORRECCION DE REGISTROS EN TABLA PAIS --
+
+UPDATE PAIS
+SET Nombre = 'Gales' WHERE ID_Pais = '5';
+
+
+-- CATEGORIAS DE LA PROVINCIA CON ID 10 --
+
+SELECT DISTINCT categoria FROM MUNICIPIOS
+WHERE ID_Provincia = 10
+AND categoria = 'Municipio';
+
+-- PROVINCIAS QUE EMPIEZAN CON S O TIENEN ID > 50 --
+
+SELECT DISTINCT provincia_nombre FROM MUNICIPIOS
+WHERE provincia_nombre LIKE 'S%' 
+OR ID_Provincia > 50
+;
+
+-- SE CUENTAN LOS MUNICIPIOS POR PROVINCIA --
+
+SELECT ID_Provincia, COUNT (*) AS CANTIDAD
+FROM DBO.MUNICIPIOS
+GROUP BY ID_Provincia
+ORDER BY CANTIDAD DESC;
+
+-- SE VALIDA DB ACTUAL --
+
+SELECT DB_NAME() AS BaseActual;
+
+-- SE VALIDAN TABLAS EN EL DB UTILIZADO -- 
+
+SELECT s.name AS esquema,t.name AS tabla
+FROM sys.tables t
+JOIN sys.schemas s ON t.schema_id = s.schema_id;
+
+-- SE CUENTAN LAS CATEGORIAS POR PROVINCIA -- 
+
+SELECT ID_Provincia, COUNT(DISTINCT categoria) AS CANTIDAD
+FROM dbo.MUNICIPIOS
+GROUP BY ID_Provincia
+HAVING COUNT(DISTINCT categoria) < 10
+ORDER BY CANTIDAD DESC;
+
+-- SE MODIFICA TIPO DE DATO --
+
+SELECT Cast(centroide_lat AS FLOAT), CAST(centroide_lon AS FLOAT)
+FROM MUNICIPIOS;
+
+-- SE BUSCA EL VALOR ABSOLUTO DE LAS LATITUDES -- 
+
+SELECT ABS(centroide_lon), ABS(centroide_lat)
+FROM MUNICIPIOS;
+
+
+-- CATEGORIAS DE LA PROVINCIA CON EL ID MAS ALTO --
+
+SELECT categoria, ID_Municipio, ID_Provincia
+FROM MUNICIPIOS
+WHERE ID_Provincia = (SELECT MAX(ID_PROVINCIA) FROM MUNICIPIOS);
+
+-- SE BUSCA EL VALOR ENTERO Y ABSOLUTO DE LA LONGITUD EN LAS PROVINCIAS QUE TENGAN "SAN" EN SU NOMBRE --
+
+SELECT ABS(centroide_lon), FLOOR(centroide_lon), provincia_nombre
+FROM MUNICIPIOS
+WHERE UPPER (provincia_nombre) LIKE 'SAN%';
+
+-- MAXIMA LONGITUD Y LATITUD DE CADA PROVINCIA. SE AGREGA "ARGENTINA" EN EL NOMBRE --
+
+SELECT 'ARGENTINA - ' + Provincia_nombre,
+MAX (centroide_lat) AS LATITUD,
+MAX (centroide_lon) AS LONGITUD
+FROM MUNICIPIOS
+GROUP BY provincia_nombre
+ORDER BY provincia_nombre;
+
+-- SE BUSCAN RESULTADOS UNICOS DE DOS TABLAS Y SE LOS ORDENA POR NOMBRE --
+
+SELECT ID_Provincia, provincia_nombre
+FROM MUNICIPIOS
+UNION
+SELECT ID_Provincia, Nombre_Provincia
+FROM PROVINCIA
+ORDER BY provincia_nombre;
+
+-- SE ACTUALIZAN ID DE PROVINCIAS EN TABLA PAIS PARA QUE COINCIDA CON ID DE TABLA MUNICIPIOS --
+
+SELECT DISTINCT ID_Provincia, provincia_nombre
+FROM MUNICIPIOS;
+
+SELECT DISTINCT ID_Provincia, Nombre_Provincia
+FROM PROVINCIA;
+
+UPDATE PROVINCIA SET ID_Provincia = 54 WHERE Nombre_Provincia = 'Misiones';
+UPDATE PROVINCIA SET ID_Provincia = 10 WHERE Nombre_Provincia = 'Catamarca';
+UPDATE PROVINCIA SET ID_Provincia = 46 WHERE Nombre_Provincia = 'La Rioja';
+UPDATE PROVINCIA SET ID_Provincia = 26 WHERE Nombre_Provincia = 'Chubut';
+UPDATE PROVINCIA SET ID_Provincia = 58 WHERE Nombre_Provincia = 'Neuquen';
+UPDATE PROVINCIA SET ID_Provincia = 82 WHERE Nombre_Provincia = 'Santa Fe';
+
+--  SE TRAEN LOS NOMBRES DE LAS PROVINCIAS DE TABLA MUNICIPIOS Y PROVINCIA --
+
+SELECT provincia_nombre
+FROM MUNICIPIOS
+LEFT JOIN PROVINCIA
+ON 
+MUNICIPIOS.provincia_nombre = PROVINCIA.Nombre_Provincia
+;
+
+SELECT provincia_nombre
+FROM MUNICIPIOS
+RIGHT JOIN PROVINCIA
+ON
+MUNICIPIOS.provincia_nombre = PROVINCIA.Nombre_Provincia
+;
+
+--  SE TRAEN LAS COINCIDENCIAS DE ID EN TABLA PAIS Y PROVINCIA --
+
+SELECT * FROM PAIS AS A 
+LEFT JOIN PROVINCIA AS B
+ON A.ID_Pais = B.ID_Pais
+;
+
+SELECT * FROM PAIS AS A
+INNER JOIN PROVINCIA AS B
+ON A.ID_Pais = B.ID_Pais
+;
