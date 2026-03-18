@@ -1,2 +1,9 @@
-# Portfolio_Practica
-Creacion de repositorio para publicacion de archivos SQL orientados a mi practica del dia a dia
+# 📊 Portfolio de Prácticas - Data Analytics
+Este repositorio contiene prácticas de limpieza, modelado y análisis de datos utilizando SQL y Excel.
+
+## 🛠️ Herramientas
+- SQL Server
+- Excel
+
+## 🎯 Objetivo
+Desarrollar habilidades como Data Analyst y construir un portfolio profesional.
