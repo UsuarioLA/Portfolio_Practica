@@ -1,5 +1,13 @@
 # 🧹 Limpieza y Modelado de Datos - Municipios
 
+## 📁 Dataset
+El dataset original se encuentra en el archivo:
+- Municipios_Original.csv
+
+## 📜 Script SQL
+El proceso completo de limpieza y modelado se encuentra en:
+- Municipios.sql
+
 ## 📌 Descripción
 En este proyecto trabajé con un dataset de municipios que presentaba problemas de calidad de datos y falta de estructura relacional. 
 
