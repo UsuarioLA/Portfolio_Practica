@@ -1,21 +1,21 @@
-# 🧹 Limpieza y Modelado de Datos - Municipios
+# Limpieza y Modelado de Datos - Municipios
 
 ## 📁 Dataset
 El dataset original se encuentra en el archivo:
 - Municipios_Original.csv
 
-## 📜 Script SQL
+## Script SQL
 El proceso completo de limpieza y modelado se encuentra en:
 - Municipios.sql
 
-## 📌 Descripción
+## Descripción
 En este proyecto trabajé con un dataset de municipios que presentaba problemas de calidad de datos y falta de estructura relacional. 
 
 El objetivo fue limpiar la información, normalizar los datos y diseñar un modelo relacional que permita mejorar el análisis.
 
 ---
 
-## 🎯 Objetivos
+## Objetivos
 - Limpiar errores de calidad de datos
 - Corregir inconsistencias en nombres
 - Definir claves primarias
@@ -24,7 +24,7 @@ El objetivo fue limpiar la información, normalizar los datos y diseñar un mode
 
 ---
 
-## 🧪 Problemas encontrados
+## Problemas encontrados
 - Errores de ortografía en nombres de provincias
 - Datos duplicados
 - Falta de claves primarias
@@ -33,7 +33,7 @@ El objetivo fue limpiar la información, normalizar los datos y diseñar un mode
 
 ---
 
-## 🛠️ Proceso realizado
+## Proceso realizado
 
 ### 🔹 Limpieza de datos
 - Corrección de errores ortográficos
@@ -71,6 +71,6 @@ Se logró transformar un dataset desordenado en una estructura relacional más l
 
 ---
 
-## 🚀 Próximos pasos
+## Próximos pasos
 - Integrar el modelo en Power BI
 - Crear dashboard de análisis geográfico
