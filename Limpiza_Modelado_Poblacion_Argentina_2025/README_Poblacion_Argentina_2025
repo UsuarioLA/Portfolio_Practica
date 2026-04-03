@@ -1,0 +1,40 @@
+Descripción:
+
+Este proyecto consiste en la preparación y limpieza de un dataset de población de Argentina utilizando SQL Server, con el objetivo de dejar los datos listos para ser utilizados en Power BI.
+
+El foco principal del trabajo fue transformar un dataset crudo en una base de datos organizada, consistente y fácil de analizar.
+
+Este repositorio representa la etapa de preparación de datos, mientras que en un proyecto posterior se utilizará esta base para realizar visualizaciones y análisis en Power BI.
+
+Trabajo realizado
+
+Durante el proceso se realizaron distintas tareas de limpieza y estructuración de datos:
+
+Eliminación de columnas innecesarias
+Corrección de errores de codificación en nombres de provincias y departamentos
+Normalización de IDs inconsistentes
+Creación de tablas separadas para Provincias y Departamentos
+Definición de claves primarias y foráneas
+Creación de vistas SQL pensadas para Power BI
+
+También se agregaron coordenadas geográficas aproximadas de cada provincia, lo que permitirá crear mapas en Power BI.
+
+Estructura de la base de datos
+
+La base quedó organizada en tres tablas principales:
+
+PROVINCIAS
+DEPARTAMENTOS
+POBLACION
+
+Este modelo permite evitar redundancias y facilita los análisis posteriores.
+
+Vistas creadas
+
+Se generaron varias vistas para simplificar el análisis en Power BI:
+
+Población total por provincia
+Población por sexo
+Población por grupo etario
+Departamentos más poblados
+Población extranjera y nacionalizada
