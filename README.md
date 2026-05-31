@@ -3,7 +3,7 @@ Este repositorio contiene prácticas de limpieza, modelado y análisis de datos 
 
 ## 🛠️ Herramientas
 - SQL Server
-- Excel
+- Power BI
 
 ## 🎯 Objetivo
 Desarrollar habilidades como Data Analyst y construir un portfolio profesional.
