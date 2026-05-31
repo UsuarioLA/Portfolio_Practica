@@ -16,7 +16,7 @@ GitHub → documentación y versionado
 
 Insights encontrados:
 
-Los juegos con mejores reviews tienden a tener más ventas
-Los descuentos agresivos impactan fuerte en la visibilidad
-El género Action domina tanto en ventas como en jugadores
-Los precios promedio varían mucho entre géneros
+1- Los juegos con mejores reviews tienden a tener más ventas.
+2- Los descuentos agresivos impactan fuerte en la visibilidad.
+3- El género Action domina tanto en ventas como en jugadores.
+4- Los precios promedio varían mucho entre géneros.
