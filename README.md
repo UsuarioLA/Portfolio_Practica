@@ -12,3 +12,11 @@ Power BI → visualización y diseño del dashboard
 DAX → KPIs, rankings dinámicos, medidas analíticas
 
 GitHub → documentación y versionado
+
+
+Insights encontrados:
+
+Los juegos con mejores reviews tienden a tener más ventas
+Los descuentos agresivos impactan fuerte en la visibilidad
+El género Action domina tanto en ventas como en jugadores
+Los precios promedio varían mucho entre géneros
