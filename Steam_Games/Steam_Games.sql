@@ -1,0 +1,326 @@
+-- SE CREA BASE DE DATOS --
+
+CREATE DATABASE STEAM_GAMES_2026;
+
+USE STEAM_GAMES_2026;
+
+-- SE CARGA ARCHIVO EXCEL Y SE REALIZA CORRECCIONES EN EL TIPO DE DATO --
+
+ALTER TABLE STEAM_GAMES
+ALTER COLUMN Release_Date DATE;
+
+EXEC sp_rename
+    'dbo.STEAM_GAMES',
+    'RAW_STEAM_GAMES';
+
+-- SE CREA LA TABLA GAMES Y SE CARGAN DATOS DESDE LA TABLA PRINCIPAL --
+
+CREATE TABLE GAMES(AppID INT NOT NULL PRIMARY KEY, Name NVARCHAR(100), Release_Date DATE, Genre_ID INT)
+
+INSERT INTO GAMES (AppID,Name,Release_Date)
+SELECT DISTINCT AppID,Name,Release_Date
+FROM RAW_STEAM_GAMES;
+
+-- SE CREA TABLA GENRES, SE CARGAN DATOS Y SE ASIGNA UN ID A CADA GENERO DE VIDEOJUEGO --
+
+CREATE TABLE GENRES (Genre_ID INT NOT NULL PRIMARY KEY IDENTITY(1,1), Primary_Genre VARCHAR(25));
+
+INSERT INTO GENRES (Primary_Genre)
+SELECT DISTINCT Primary_Genre
+FROM RAW_STEAM_GAMES;
+
+-- SE RELACIONA LA TABLA GENRES CON LA TABLA GAMES --
+
+ALTER TABLE GAMES ADD CONSTRAINT FK_Games_Genres
+FOREIGN KEY (Genre_ID) REFERENCES GENRES (Genre_ID);
+
+-- SE CARGAN IDs DE GENEROS EN LA TABLA GAMES --
+
+UPDATE G
+SET G.Genre_ID = GE.Genre_ID
+FROM GAMES G 
+JOIN RAW_STEAM_GAMES SG
+ON G.AppID = SG.AppID
+JOIN GENRES GE
+ON SG.Primary_Genre = GE.Primary_Genre;
+
+-- SE CREA TABLA DE PRECIOS Y SE INSERTAN DATOS --
+
+CREATE TABLE GAMES_PRICES (AppID INT PRIMARY KEY NOT NULL, Price_USD DECIMAL(10,2), Discount_Pct DECIMAL (5,2),
+CONSTRAINT FK_GamesPrices_Games FOREIGN KEY (AppID) REFERENCES GAMES(AppID));
+
+INSERT INTO GAMES_PRICES (AppID,Price_USD,Discount_Pct)
+SELECT DISTINCT AppID,Price_USD,Discount_Pct
+FROM RAW_STEAM_GAMES;
+
+-- SE CREA LA TABLA GAMES_REVIEWS, SE CARGAN DATOS Y SE DEFINEN CLAVES --
+
+CREATE TABLE GAMES_REVIEWS (AppID INT NOT NULL PRIMARY KEY, Review_Score_Pct DECIMAL (5,2), Total_Reviews INT, 
+CONSTRAINT FK_GamesReviews_Games FOREIGN KEY (AppID) REFERENCES GAMES(AppID), 
+CONSTRAINT CHK_ReviewScore CHECK (Review_Score_Pct BETWEEN 0 AND 100));
+
+INSERT INTO GAMES_REVIEWS (AppID,Review_Score_Pct,Total_Reviews)
+SELECT DISTINCT AppID,Review_Score_Pct,Total_Reviews
+FROM RAW_STEAM_GAMES;
+
+-- SE CREA LA TABLA GAMES_PLAYERS, SE CARGAN DATOS Y SE DEFINEN CLAVES --
+
+CREATE TABLE GAMES_PLAYERS (AppID INT NOT NULL PRIMARY KEY, Estimated_Owners BIGINT, Peak_Players_24hs INT,
+CONSTRAINT FK_GamePlayers_Games FOREIGN KEY (AppID) REFERENCES GAMES(AppID));
+
+INSERT INTO GAMES_PLAYERS (AppID, Estimated_Owners, Peak_Players_24hs)
+SELECT AppID, Estimated_Owners, [24hs_Peak_Players]
+FROM RAW_STEAM_GAMES;
+
+UPDATE GP SET GP.Peak_Players_24hs = SG.[24h_Peak_Players]
+FROM GAMES_PLAYERS GP
+JOIN RAW_STEAM_GAMES SG
+ON GP.AppID = SG.AppID;
+
+-- CONSULTA 1: Juegos mas vendidos y Top 10 de los mismos --
+
+SELECT G.Name, GP.Estimated_Owners
+FROM GAMES_PLAYERS GP
+JOIN GAMES G
+ON GP.AppID = G.AppID
+ORDER BY GP.Estimated_Owners DESC;
+
+SELECT TOP 10 G.Name, GP.Estimated_Owners
+FROM GAMES_PLAYERS GP
+JOIN GAMES G
+ON GP.AppID = G.AppID
+ORDER BY GP.Estimated_Owners DESC;
+
+-- CONSULTA 2: Juegos menos vendidos y Top 10 de los mismos --
+
+SELECT G.Name, GP.Estimated_Owners
+FROM GAMES_PLAYERS GP
+JOIN GAMES G
+ON GP.AppID = G.AppID
+ORDER BY GP.Estimated_Owners ASC;
+
+SELECT TOP 10 G.Name, GP.Estimated_Owners
+FROM GAMES_PLAYERS GP
+JOIN GAMES G
+ON GP.AppID = G.AppID
+ORDER BY GP.Estimated_Owners ASC;
+
+-- CONSULTA 3: Juegos con mas jugadores diarios y Top 10 de los mismos --
+
+SELECT G.Name, GP.Peak_Players_24hs
+FROM GAMES_PLAYERS GP
+JOIN GAMES G
+ON GP.AppID = G.AppID
+ORDER BY GP.Peak_Players_24hs DESC;
+
+SELECT TOP 10 G.Name, GP.Peak_Players_24hs
+FROM GAMES_PLAYERS GP
+JOIN GAMES G
+ON GP.AppID = G.AppID
+ORDER BY GP.Peak_Players_24hs DESC;
+
+-- CONSULTA 4: Juegos mas costosos --
+
+SELECT G.Name, GP.Price_USD
+FROM GAMES_PRICES GP
+JOIN GAMES G
+ON GP.AppID = G.AppID
+ORDER BY GP.Price_USD DESC;
+
+-- CONSULTA 5: Juegos mas baratos a partir de $0.99 --
+
+SELECT G.Name, GP.Price_USD
+FROM GAMES_PRICES GP
+JOIN GAMES G
+ON GP.AppID = G.AppID
+WHERE GP.Price_USD > 0.99
+ORDER BY GP.Price_USD ASC;
+
+-- CONSULTA 6: Juegos con mayor descuento --
+
+SELECT G.Name, GP.Discount_Pct
+FROM GAMES_PRICES GP
+JOIN GAMES G
+ON GP.AppID = G.AppID
+ORDER BY GP.Discount_Pct DESC;
+
+-- CONSULTA 7: Juegos gratis --
+
+SELECT G.Name, GP.Price_USD
+FROM GAMES_PRICES GP
+JOIN GAMES G
+ON GP.AppID = G.AppID
+WHERE GP.Price_USD = 0.00;
+
+-- CONSULTA 8: Juegos con mejores reviews y Top 10 de los mismos --
+
+SELECT G.Name, GR.Review_Score_Pct
+FROM GAMES_REVIEWS GR
+JOIN GAMES G
+ON GR.AppID = G.AppID
+ORDER BY GR.Review_Score_Pct DESC;
+
+SELECT TOP 10 G.Name, GR.Review_Score_Pct
+FROM GAMES_REVIEWS GR
+JOIN GAMES G
+ON GR.AppID = G.AppID
+ORDER BY GR.Review_Score_Pct DESC;
+
+-- CONSULTA 9: Generos mas vendidos y Top 5 de los mismos --
+
+SELECT GE.Primary_Genre, SUM(GP.Estimated_Owners) AS Total_Owners
+FROM GAMES_PLAYERS GP
+JOIN GAMES G
+ON GP.AppID = G.AppID
+JOIN GENRES GE
+ON G.Genre_ID = GE.Genre_ID
+GROUP BY GE.Primary_Genre
+ORDER BY Total_Owners DESC;
+
+SELECT TOP 5 GE.Primary_Genre, SUM(GP.Estimated_Owners) AS Total_Owners
+FROM GAMES_PLAYERS GP
+JOIN GAMES G
+ON GP.AppID = G.AppID
+JOIN GENRES GE
+ON G.Genre_ID = GE.Genre_ID
+GROUP BY GE.Primary_Genre
+ORDER BY Total_Owners DESC;
+
+-- CONSULTA 9: Generos con mas jugadores diarios y Top 5 de los mismos --
+
+SELECT GE.Primary_Genre, SUM(GP.Peak_Players_24hs) AS Total_Current_Players
+FROM GAMES_PLAYERS GP
+JOIN GAMES G
+ON G.AppID = GP.AppID
+JOIN GENRES GE
+ON G.Genre_ID = GE.Genre_ID
+GROUP BY GE.Primary_Genre
+ORDER BY Total_Current_Players DESC;
+
+SELECT TOP 5 GE.Primary_Genre, SUM(GP.Peak_Players_24hs) AS Total_Current_Players
+FROM GAMES_PLAYERS GP
+JOIN GAMES G
+ON G.AppID = GP.AppID
+JOIN GENRES GE
+ON G.Genre_ID = GE.Genre_ID
+GROUP BY GE.Primary_Genre
+ORDER BY Total_Current_Players DESC;
+
+-- CONSULTA 10: Precio promedio de cada genero --
+
+SELECT GE.Primary_Genre, AVG(GP.Price_USD) AS Average_Price
+FROM GAMES_PRICES GP
+JOIN GAMES G
+ON GP.AppID = G.AppID
+JOIN GENRES GE
+ON G.Genre_ID = GE.Genre_ID
+WHERE GP.Price_USD > 0
+GROUP BY GE.Primary_Genre
+ORDER BY Average_Price DESC;
+
+-- CONSULTA 11: Juegos mas vendidos vs juegos mas jugados --
+
+SELECT TOP 10 G.Name, GP.Estimated_Owners, GP.Peak_Players_24hs
+FROM GAMES_PLAYERS GP
+JOIN GAMES G
+ON G.AppID = GP.AppID
+ORDER BY GP.Peak_Players_24hs DESC;
+
+SELECT G.Name, GP.Estimated_Owners, GP.Peak_Players_24hs,
+DENSE_RANK() OVER(ORDER BY GP.Estimated_Owners DESC) AS Rank_Sales,
+DENSE_RANK() OVER(ORDER BY GP.Peak_Players_24hs DESC) AS Rank_Players
+FROM GAMES_PLAYERS GP
+JOIN GAMES G
+ON G.AppID = GP.AppID;
+
+--CONSULTA 12: Juegos con mejores rese�as --
+
+SELECT TOP 10 G.Name, GR.Review_Score_Pct, GR.Total_Reviews
+FROM GAMES_REVIEWS GR
+JOIN GAMES G
+ON G.AppID = GR.AppID
+WHERE GR.Total_Reviews > 1000
+ORDER BY GR.Total_Reviews DESC;
+
+-- SE CRAN VISTAS PARA POWER BI -- 
+
+CREATE VIEW VW_JuegosMasVendidos
+AS
+SELECT G.Name, GP.Estimated_Owners
+FROM GAMES_PLAYERS GP
+JOIN GAMES G
+ON GP.AppID = G.AppID;
+
+CREATE VIEW VW_JuegosMasJugados
+AS
+SELECT G.Name, GP.Peak_Players_24hs
+FROM GAMES_PLAYERS GP
+JOIN GAMES G
+ON GP.AppID = G.AppID;
+
+CREATE VIEW VW_JuegosMasCostosos
+AS
+SELECT G.Name, GP.Price_USD
+FROM GAMES_PRICES GP
+JOIN GAMES G
+ON GP.AppID = G.AppID;
+
+CREATE VIEW VW_JuegosMejoresReviews
+AS
+SELECT G.Name, GR.Review_Score_Pct
+FROM GAMES_REVIEWS GR
+JOIN GAMES G
+ON GR.AppID = G.AppID;
+
+CREATE VIEW VW_GenerosMasVendidos
+AS
+SELECT GE.Primary_Genre, SUM(GP.Estimated_Owners) AS Total_Owners
+FROM GAMES_PLAYERS GP
+JOIN GAMES G
+ON GP.AppID = G.AppID
+JOIN GENRES GE
+ON G.Genre_ID = GE.Genre_ID
+GROUP BY GE.Primary_Genre;
+
+CREATE VIEW VW_GenerosMasJugados
+AS
+SELECT GE.Primary_Genre, SUM(GP.Peak_Players_24hs) AS Total_Current_Players
+FROM GAMES_PLAYERS GP
+JOIN GAMES G
+ON G.AppID = GP.AppID
+JOIN GENRES GE
+ON G.Genre_ID = GE.Genre_ID
+GROUP BY GE.Primary_Genre;
+
+CREATE VIEW VW_PrecioPromedioGenero
+AS
+SELECT GE.Primary_Genre, AVG(GP.Price_USD) AS Average_Price
+FROM GAMES_PRICES GP
+JOIN GAMES G
+ON GP.AppID = G.AppID
+JOIN GENRES GE
+ON G.Genre_ID = GE.Genre_ID
+GROUP BY GE.Primary_Genre;
+
+CREATE VIEW VW_JuegosMasJugadosVSMasVendidos
+AS
+SELECT G.Name, GP.Estimated_Owners, GP.Peak_Players_24hs,
+DENSE_RANK() OVER(ORDER BY GP.Estimated_Owners DESC) AS Rank_Sales,
+DENSE_RANK() OVER(ORDER BY GP.Peak_Players_24hs DESC) AS Rank_Players
+FROM GAMES_PLAYERS GP
+JOIN GAMES G
+ON G.AppID = GP.AppID;
+
+CREATE VIEW VW_VistaGeneral
+AS
+SELECT G.AppID, G.Name, G.Release_Date, GPL.Estimated_Owners, GPL.Peak_Players_24hs,
+GPR.Price_USD, GPR.Discount_Pct, GR.Review_Score_Pct, GR.Total_Reviews, GE.Genre_ID, GE.Primary_Genre
+FROM GAMES G
+LEFT JOIN GAMES_PLAYERS GPL
+ON G.AppID = GPL.AppID
+LEFT JOIN GAMES_PRICES GPR
+ON G.AppID = GPR.AppID
+LEFT JOIN GAMES_REVIEWS GR
+ON G.AppID = GR.AppID
+LEFT JOIN GENRES GE
+ON G.Genre_ID = GE.Genre_ID;
