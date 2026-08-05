@@ -1,1 +1,102 @@
+Dashboard de Ventas E-commerce | Power BI
 
+Descripción General:
+Este proyecto consiste en un dashboard interactivo desarrollado en Power BI utilizando un conjunto de datos de ventas de comercio electrónico.
+
+El objetivo principal fue poner en práctica conceptos de modelado de datos, creación de métricas con DAX, diseño de dashboards y análisis de negocio mediante distintas vistas enfocadas en Productos, Regiones y Clientes.
+
+Objetivos del Proyecto:
+
+Analizar el desempeño de ventas de un e-commerce.
+Identificar tendencias de ventas a lo largo del tiempo.
+Comparar el rendimiento de categorías de productos.
+Analizar el comportamiento de los clientes.
+Evaluar métodos de pago y niveles de satisfacción.
+Practicar buenas prácticas de modelado de datos en Power BI.
+Modelado de Datos
+
+Para este proyecto se implementó un modelo tipo estrella utilizando:
+
+Tabla de Hechos
+Ecommerce_Sales
+Tablas Dimensión
+Calendario
+Productos
+Regiones
+Métodos de Pago
+Relaciones
+Relación uno a muchos (1:*)
+Dirección de filtro única
+Uso de tabla calendario para análisis temporal
+Transformación de Datos
+
+Las transformaciones fueron realizadas utilizando Power Query:
+
+Limpieza de datos
+Conversión de tipos de datos
+Creación de tablas dimensión
+Generación de claves identificadoras
+Validación de fechas y relaciones
+Medidas DAX Implementadas
+Ventas Totales = SUM(Ecommerce_Sales[Revenue])
+Cantidad de Pedidos = COUNT(Ecommerce_Sales[Order_ID])
+Clientes Únicos = DISTINCTCOUNT(Ecommerce_Sales[Customer_ID])
+Rating Promedio = AVERAGE(Ecommerce_Sales[Customer_Rating])
+
+Páginas del Dashboard:
+
+📦 Productos
+Análisis del desempeño de las distintas categorías.
+
+Incluye:
+Ventas Totales por categoría
+Cantidad de pedidos
+Rating promedio
+Filtros por categoría
+Evolución de ventas por año
+
+🌎 Regiones
+Análisis geográfico del negocio.
+
+Incluye:
+Ventas Totales por región
+Pedidos por región
+Comparación entre regiones
+Evolución anual de ventas por región
+Filtros interactivos
+
+👥 Clientes
+Análisis del comportamiento y satisfacción de los clientes.
+
+Incluye:
+Clientes únicos
+Cantidad de pedidos
+Ventas Totales
+Métodos de pago más utilizados
+Rating promedio por categoría
+Participación de ventas por año
+
+Herramientas Utilizadas:
+Power BI Desktop
+Power Query
+DAX
+Microsoft Excel
+Modelado de datos
+Diseño de dashboards
+Transformación de datos
+Creación de métricas con DAX
+Visualización de datos
+Análisis de negocio
+Storytelling con datos
+KPI y métricas de rendimiento
+Capturas del Dashboard
+Página Productos
+
+Durante este proyecto reforcé conocimientos relacionados con:
+
+Modelos estrella en Power BI.
+Uso de tablas calendario.
+Creación de medidas DAX.
+Construcción de dashboards interactivos.
+Selección adecuada de visualizaciones.
+Organización de análisis por áreas de negocio.
